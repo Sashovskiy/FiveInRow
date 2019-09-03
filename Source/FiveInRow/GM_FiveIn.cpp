@@ -196,20 +196,37 @@ FCellStruct AGM_FiveIn::FindCellToMove()
 FCellStruct AGM_FiveIn::RandCellNear(FCellStruct EnemeCell)
 {
 
+		if (EnemeCell.y != 0)
+			if (Field[(EnemeCell.y - 1) * FieldSize + EnemeCell.x].Owner == EPlayerType::PT_None)
+				return  Field[(EnemeCell.y - 1) * FieldSize + EnemeCell.x];
 		if (EnemeCell.y != (FieldSize - 1))
 			if (Field[(EnemeCell.y + 1) * FieldSize + EnemeCell.x].Owner == EPlayerType::PT_None)
 				return  Field[(EnemeCell.y + 1) * FieldSize + EnemeCell.x];
-
+		if (EnemeCell.x != 0)
+			if (Field[EnemeCell.y * FieldSize + (EnemeCell.x - 1)].Owner == EPlayerType::PT_None)
+				return  Field[EnemeCell.y * FieldSize + (EnemeCell.x - 1)];
 		if (EnemeCell.x != (FieldSize - 1))
 			if (Field[EnemeCell.y * FieldSize + (EnemeCell.x + 1)].Owner == EPlayerType::PT_None)
 				return  Field[EnemeCell.y * FieldSize + (EnemeCell.x + 1)];
 
+
+
+
 		if ((EnemeCell.y != (FieldSize - 1)) && (EnemeCell.x != (FieldSize - 1)))
 			if (Field[(EnemeCell.y + 1) * FieldSize + (EnemeCell.x + 1)].Owner == EPlayerType::PT_None)
 				return Field[(EnemeCell.y + 1) * FieldSize + (EnemeCell.x + 1)];
+
 		if ((EnemeCell.y != (FieldSize - 1)) && (EnemeCell.x != 0))
 			if (Field[(EnemeCell.y + 1) * FieldSize + (EnemeCell.x - 1)].Owner == EPlayerType::PT_None)
 				return Field[(EnemeCell.y + 1) * FieldSize + (EnemeCell.x - 1)];
+
+		if ((EnemeCell.y != 0) && (EnemeCell.x != 0))
+			if (Field[(EnemeCell.y - 1) * FieldSize + (EnemeCell.x - 1)].Owner == EPlayerType::PT_None)
+				return Field[(EnemeCell.y - 1) * FieldSize + (EnemeCell.x - 1)];
+
+		if ((EnemeCell.y != 0) && (EnemeCell.x != (FieldSize - 1)))
+			if (Field[(EnemeCell.y - 1) * FieldSize + (EnemeCell.x + 1)].Owner == EPlayerType::PT_None)
+				return Field[(EnemeCell.y - 1) * FieldSize + (EnemeCell.x + 1)];
 
 		return FCellStruct(-1,-1);
 
