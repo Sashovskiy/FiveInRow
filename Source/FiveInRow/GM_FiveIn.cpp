@@ -2,6 +2,16 @@
 
 
 #include "GM_FiveIn.h"
+#include "Engine.h"	
+
+bool AGM_FiveIn::SetSize(int32 Size_l)
+{
+	if(Size_l < 8)
+	return false;
+
+	FieldSize = Size_l;
+	return true;
+}
 
 EWinType AGM_FiveIn::isWin()
 {
@@ -15,10 +25,12 @@ EWinType AGM_FiveIn::isWin()
 			if(Checking(i, cell, 0) == EWinType::WT_Win)
 				if (CurrentPlayer == EPlayerType::PT_AI)
 				{
+					UE_LOG(LogTemp, Warning, TEXT("Lose"))
 					return EWinType::WT_Lose;
 				}
 				else
 				{
+					UE_LOG(LogTemp, Warning, TEXT("Win"))
 					return EWinType::WT_Win;
 				}
 		}
@@ -42,6 +54,7 @@ TArray<FCellStruct> AGM_FiveIn::FindAllCellsbyOwner(EPlayerType owner)
 EWinType AGM_FiveIn::Checking(int32 CheckingTYPE, FCellStruct cell, int32 count)
 {
 	count++;
+	UE_LOG(LogTemp, Warning, TEXT("Type: %d count: %d"), CheckingTYPE ,count)
 	if (count >= 5 )
 	{
 		return EWinType::WT_Win;
@@ -53,25 +66,25 @@ EWinType AGM_FiveIn::Checking(int32 CheckingTYPE, FCellStruct cell, int32 count)
 	case 0:
 		if(cell.y != 0)
 			if (Field[(cell.y +1) * FieldSize + cell.x].Owner == CurrentPlayer)
-				return Checking(CheckingTYPE, Field[cell.y * FieldSize + cell.x], count);
+				return Checking(CheckingTYPE, Field[(cell.y + 1) * FieldSize + cell.x], count);
 		break;
 		//Cheking horizontal win
 	case 1:
 		if(cell.x != (FieldSize - 1))
 			if (Field[cell.y * FieldSize + (cell.x+1)].Owner == CurrentPlayer)
-				return Checking(CheckingTYPE, Field[cell.y * FieldSize + cell.x], count);
+				return Checking(CheckingTYPE, Field[cell.y * FieldSize + (cell.x + 1)], count);
 		break;
 		//Cheking  first diagonal win
 	case 2:
 		if((cell.y != 0)&&(cell.x != (FieldSize - 1)))
-			if (Field[cell.y * FieldSize + cell.x].Owner == CurrentPlayer)
-				return Checking(CheckingTYPE, Field[cell.y * FieldSize + cell.x], count);
+			if (Field[(cell.y +1) * FieldSize + (cell.x +1)].Owner == CurrentPlayer)
+				return Checking(CheckingTYPE, Field[(cell.y + 1) * FieldSize + (cell.x + 1)], count);
 		break;
 		//Cheking  second win
 	case 3:
 		if ((cell.y != 0) && (cell.x != 0))
-			if (Field[cell.y * FieldSize + cell.x].Owner == CurrentPlayer)
-				return Checking(CheckingTYPE, Field[cell.y * FieldSize + cell.x], count);
+			if (Field[(cell.y+1) * FieldSize + (cell.x - 1)].Owner == CurrentPlayer)
+				return Checking(CheckingTYPE, Field[(cell.y + 1) * FieldSize + (cell.x - 1)], count);
 		break;
 
 	default:
@@ -82,12 +95,17 @@ EWinType AGM_FiveIn::Checking(int32 CheckingTYPE, FCellStruct cell, int32 count)
 
 void AGM_FiveIn::Start()
 {
-	for (int32 i = 0; i < (FieldSize * FieldSize); i++)
+	for (int32 i = 0; i < FieldSize; i++)
 	{
-		Field.Add(FCellStruct((i -(8* (i / FieldSize)) ),(i/ FieldSize)));
+		for (int32 j = 0; j < FieldSize; j++)
+		{
+			Field.Add(FCellStruct(j,i ));
+		}//if (GEngine)
+		//	GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Yellow, FString::Printf(TEXT("Start")));
 	}
 	CurrentPlayer = EPlayerType::PT_Player;
 	CallEndMove.AddDynamic(this, &AGM_FiveIn::EndMove);
+	StartNEwGame.Broadcast();
 }
 
 void AGM_FiveIn::EndMove()
@@ -113,6 +131,33 @@ void AGM_FiveIn::EndMove()
 	CurrentPlayer = (CurrentPlayer == EPlayerType::PT_Player) ? (EPlayerType::PT_AI) : (EPlayerType::PT_Player);
 
 	NextTurn.Broadcast();
+
+
+
+}
+
+bool AGM_FiveIn::makeMove(FCellStruct cell_l, bool& isAiMove)
+{
+	isAiMove = (CurrentPlayer == EPlayerType::PT_AI);
+
+	if(cell_l.Owner != EPlayerType::PT_None)
+	return false;
+
+	if (Field[cell_l.y*FieldSize + cell_l.x].Owner != EPlayerType::PT_None)
+		return false;
+
+	Field[cell_l.y * FieldSize + cell_l.x].Owner = CurrentPlayer;
+
+	CallEndMove.Broadcast();
+	return true;
+}
+
+
+void AGM_FiveIn::BeginPlay()
+{
+	Super::BeginPlay();
+
+	
 
 
 

@@ -36,8 +36,10 @@ struct FCellStruct
 {
 	GENERATED_USTRUCT_BODY()
 
-		int32 x, y;
-
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+		int32 x;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+		int32 y;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 		EPlayerType Owner = EPlayerType::PT_None;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
