@@ -15,7 +15,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE(FWin);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FNextTurn);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FEndMove);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FStartGame);
-
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FAIMove, FCellStruct, Cell);
 UCLASS()
 class FIVEINROW_API AGM_FiveIn : public AGameModeBase
 {
@@ -54,7 +54,8 @@ EPlayerType GetWinner() const { return Winner; };
 	EWinType isWin();
 	TArray<FCellStruct> FindAllCellsbyOwner(EPlayerType owner);
 	EWinType Checking(int32 CheckingTYPE, FCellStruct cell, int32 count);
-	
+	bool isDraw();
+
 	//Turn system 
 	UFUNCTION(BlueprintCallable)
 	void Start();
@@ -67,10 +68,14 @@ EPlayerType GetWinner() const { return Winner; };
 	UPROPERTY(BlueprintAssignable)
 	FEndMove CallEndMove;
 	UPROPERTY(BlueprintAssignable)
+	FAIMove AiMove;
+	UPROPERTY(BlueprintAssignable)
 		FStartGame StartNEwGame;
 
 	//Move Sustem
 	UFUNCTION(BlueprintCallable)
 	bool makeMove(FCellStruct cell_l, bool& isAiMove);
-
+	// AI move
+	FCellStruct FindCellToMove();
+	FCellStruct RandCellNear(FCellStruct EnemeCell);
 	};

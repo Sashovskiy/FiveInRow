@@ -46,7 +46,9 @@ struct FCellStruct
 		bool ischecked = false;
 
 	FCellStruct() {};
-	FCellStruct(int32 ArrX, int32 ArrY) :x(ArrX), y(ArrY) {};
+	FCellStruct(int32 ArrX, int32 ArrY) :x(ArrX), y(ArrY) {
+		Owner = EPlayerType::PT_None;
+	};
 
 
 };

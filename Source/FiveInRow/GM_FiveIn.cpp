@@ -3,6 +3,7 @@
 
 #include "GM_FiveIn.h"
 #include "Engine.h"	
+#include "Runtime/Engine/Classes/Sound/SoundCue.h"
 
 bool AGM_FiveIn::SetSize(int32 Size_l)
 {
@@ -36,6 +37,9 @@ EWinType AGM_FiveIn::isWin()
 		}
 
 	}
+	if (isDraw())
+		return EWinType::WT_Draw;
+
 	return EWinType::WT_Continue;
 }
 
@@ -64,7 +68,7 @@ EWinType AGM_FiveIn::Checking(int32 CheckingTYPE, FCellStruct cell, int32 count)
 	{
 		//Cheking vertical win
 	case 0:
-		if(cell.y != 0)
+		if(cell.y != (FieldSize - 1))
 			if (Field[(cell.y +1) * FieldSize + cell.x].Owner == CurrentPlayer)
 				return Checking(CheckingTYPE, Field[(cell.y + 1) * FieldSize + cell.x], count);
 		break;
@@ -76,13 +80,13 @@ EWinType AGM_FiveIn::Checking(int32 CheckingTYPE, FCellStruct cell, int32 count)
 		break;
 		//Cheking  first diagonal win
 	case 2:
-		if((cell.y != 0)&&(cell.x != (FieldSize - 1)))
+		if((cell.y != (FieldSize - 1))&&(cell.x != (FieldSize - 1)))
 			if (Field[(cell.y +1) * FieldSize + (cell.x +1)].Owner == CurrentPlayer)
 				return Checking(CheckingTYPE, Field[(cell.y + 1) * FieldSize + (cell.x + 1)], count);
 		break;
 		//Cheking  second win
 	case 3:
-		if ((cell.y != 0) && (cell.x != 0))
+		if ((cell.y != (FieldSize - 1)) && (cell.x != 0))
 			if (Field[(cell.y+1) * FieldSize + (cell.x - 1)].Owner == CurrentPlayer)
 				return Checking(CheckingTYPE, Field[(cell.y + 1) * FieldSize + (cell.x - 1)], count);
 		break;
@@ -91,6 +95,18 @@ EWinType AGM_FiveIn::Checking(int32 CheckingTYPE, FCellStruct cell, int32 count)
 		break;
 	}
 	return EWinType::WT_Continue;
+}
+
+bool AGM_FiveIn::isDraw()
+{
+	for (FCellStruct cell : Field)
+	{
+		if (cell.Owner == EPlayerType::PT_None)
+			return false;
+
+	}
+
+	return true;
 }
 
 void AGM_FiveIn::Start()
@@ -132,7 +148,16 @@ void AGM_FiveIn::EndMove()
 
 	NextTurn.Broadcast();
 
-
+	if (CurrentPlayer == EPlayerType::PT_AI) 
+	{
+		/*bool isAI;
+		makeMove(FindCellToMove(), isAI);
+		USoundCue* AIPlaceSound = LoadObject<USoundCue>(nullptr, TEXT("SoundCue'/Engine/VREditor/Sounds/VR_open_Cue.VR_open_Cue'"));
+		UGameplayStatics::PlaySound2D(this, AIPlaceSound);*/
+		AiMove.Broadcast(FindCellToMove());
+		
+	}
+		
 
 }
 
@@ -150,6 +175,45 @@ bool AGM_FiveIn::makeMove(FCellStruct cell_l, bool& isAiMove)
 
 	CallEndMove.Broadcast();
 	return true;
+}
+
+FCellStruct AGM_FiveIn::FindCellToMove()
+{
+	bool isFree = false;
+	TArray<FCellStruct> EnemyCells = FindAllCellsbyOwner(EPlayerType::PT_Player);
+	
+//	FCellStruct cell = EnemyCells[FMath::RandRange(0, (EnemyCells.Num() - 1))];
+	
+	for (FCellStruct cell : EnemyCells)
+	{
+		FCellStruct temp = RandCellNear(cell);
+		if (temp.x != -1)
+			return temp;
+	}
+	return FCellStruct(-1, -1);
+}
+
+FCellStruct AGM_FiveIn::RandCellNear(FCellStruct EnemeCell)
+{
+
+		if (EnemeCell.y != (FieldSize - 1))
+			if (Field[(EnemeCell.y + 1) * FieldSize + EnemeCell.x].Owner == EPlayerType::PT_None)
+				return  Field[(EnemeCell.y + 1) * FieldSize + EnemeCell.x];
+
+		if (EnemeCell.x != (FieldSize - 1))
+			if (Field[EnemeCell.y * FieldSize + (EnemeCell.x + 1)].Owner == EPlayerType::PT_None)
+				return  Field[EnemeCell.y * FieldSize + (EnemeCell.x + 1)];
+
+		if ((EnemeCell.y != (FieldSize - 1)) && (EnemeCell.x != (FieldSize - 1)))
+			if (Field[(EnemeCell.y + 1) * FieldSize + (EnemeCell.x + 1)].Owner == EPlayerType::PT_None)
+				return Field[(EnemeCell.y + 1) * FieldSize + (EnemeCell.x + 1)];
+		if ((EnemeCell.y != (FieldSize - 1)) && (EnemeCell.x != 0))
+			if (Field[(EnemeCell.y + 1) * FieldSize + (EnemeCell.x - 1)].Owner == EPlayerType::PT_None)
+				return Field[(EnemeCell.y + 1) * FieldSize + (EnemeCell.x - 1)];
+
+		return FCellStruct(-1,-1);
+
+	
 }
 
 
